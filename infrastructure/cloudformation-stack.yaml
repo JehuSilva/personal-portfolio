@@ -76,6 +76,9 @@ Resources:
           Stage: v1
       Description: Usage plan for My API
       UsagePlanName: MyUsagePlan
+      Throttle:
+        BurstLimit: 2
+        RateLimit: 5
     DependsOn: ApiDeployment
 
   MyUsagePlanKey:
@@ -85,30 +88,61 @@ Resources:
       KeyType: "API_KEY"
       UsagePlanId: !Ref MyUsagePlan
 
-
-  # Recurso de API Gateway
-  MyApiResource:
+  MyApiResourcePing:
     Type: 'AWS::ApiGateway::Resource'
     Properties:
       RestApiId: !Ref MyApiGateway
       ParentId: !GetAtt 'MyApiGateway.RootResourceId'
       PathPart: 'ping'
 
-  MyApiMethod:
+  MyApiMethodPing:
     Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId:
-        Ref: MyApiGateway
-      ResourceId:
-        Ref: MyApiResource  # Asegúrate de ajustar este valor
+      RestApiId: !Ref MyApiGateway
+      ResourceId: !Ref MyApiResourcePing
+      HttpMethod: GET
+      AuthorizationType: NONE
+      ApiKeyRequired: true
+      Integration:
+        Type: AWS_PROXY
+        IntegrationHttpMethod: POST
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              "method.response.header.Access-Control-Allow-Origin": "'*'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Origin": true
+
+  MyApiResourceContact:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref MyApiGateway
+      ParentId: !GetAtt 'MyApiGateway.RootResourceId'
+      PathPart: 'contact'
+
+  MyApiMethodContact:
+    Type: AWS::ApiGateway::Method
+    Properties:
+      RestApiId: !Ref MyApiGateway
+      ResourceId: !Ref MyApiResourceContact
       HttpMethod: POST
       AuthorizationType: NONE
       ApiKeyRequired: true
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri:
-          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations
+        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseParameters:
+              "method.response.header.Access-Control-Allow-Origin": "'*'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Origin": true
 
   # Permiso para que API Gateway pueda invocar Lambda
   LambdaPermissionForAPIGateway:
@@ -119,13 +153,15 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApiGateway}/*
 
-  # Despliegue de API
   ApiDeployment:
-    Type: 'AWS::ApiGateway::Deployment'
-    Properties:
-      RestApiId: !Ref MyApiGateway
-      StageName: v1
-    DependsOn: MyApiMethod
+      Type: 'AWS::ApiGateway::Deployment'
+      Properties:
+        RestApiId: !Ref MyApiGateway
+        StageName: v1
+      DependsOn: 
+        - MyApiMethodPing
+        - MyApiMethodContact
+
 
   # The Amazon S3 bucket into which our Single Page Application build files must be deployed
   S3Bucket:
@@ -257,7 +293,7 @@ Resources:
 
 Outputs:
   APIEndpoint:
-    Value: !Sub "https://${MyApiGateway}.execute-api.${AWS::Region}.amazonaws.com/v1/ping"
+    Value: !Sub "https://${MyApiGateway}.execute-api.${AWS::Region}.amazonaws.com/v1"
   BucketName:
     Value: !Sub "${DomainName}"
   CFDistributionURL:
