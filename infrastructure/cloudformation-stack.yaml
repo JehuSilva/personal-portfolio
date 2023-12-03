@@ -19,10 +19,17 @@ Resources:
     Properties:
       Code:
         ZipFile: |
+          import json
           def lambda_handler(event, context):
+              print(event)
               return {
                   "statusCode": 200,
-                  "body": "Respuesta desde Lambda"
+                  "headers": {
+                      "Access-Control-Allow-Origin": "*",  # Permite solicitudes de cualquier origen
+                      "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+                      "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
+                  },
+                  "body": json.dumps(event)
               }
       Handler: index.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
@@ -114,7 +121,9 @@ Resources:
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
-            "method.response.header.Access-Control-Allow-Origin": true
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,POST'"
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
 
   MyApiResourceContact:
     Type: 'AWS::ApiGateway::Resource'
@@ -142,7 +151,10 @@ Resources:
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
-            "method.response.header.Access-Control-Allow-Origin": true
+            "method.response.header.Access-Control-Allow-Origin": "'*'"
+            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,POST'"
+            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+
 
   # Permiso para que API Gateway pueda invocar Lambda
   LambdaPermissionForAPIGateway:
