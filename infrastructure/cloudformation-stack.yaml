@@ -7,22 +7,12 @@ Parameters:
   DomainName:
     Description: "The domain name"
     Type: "String"
-    Default: "jehusilva.com"
+    Default: "jehusilva.dev"
+  ACMCertificateArn:
+    Description: "The ARN of the ACM certificate"
+    Type: "String"
 
 Resources:
-  # Tabla DynamoDB para operaciones CRUD
-  DynamoDBTable:
-    Type: 'AWS::DynamoDB::Table'
-    Properties:
-      TableName: CreaSitiosMX
-      AttributeDefinitions:
-        - AttributeName: id
-          AttributeType: S
-      KeySchema:
-        - AttributeName: id
-          KeyType: HASH
-      BillingMode: PAY_PER_REQUEST
-
   # Función Lambda
   MyLambdaFunction:
     Type: AWS::Lambda::Function
@@ -166,33 +156,16 @@ Resources:
           - ObjectOwnership: BucketOwnerPreferred
     DeletionPolicy: Delete
 
-  MyHostedZone:
-    Type: 'AWS::Route53::HostedZone'
-    Properties:
-      Name: !Ref DomainName
-
-  ACMCertificate:
-    Type: 'AWS::CertificateManager::Certificate'
-    Properties:
-      DomainName: !Ref DomainName
-      SubjectAlternativeNames:
-        - !Sub "www.${DomainName}"
-        - !Sub "*.${DomainName}"
-      ValidationMethod: DNS
-    DependsOn: MyHostedZone
-
-
   # The Amazon CloudFront distribution exposing our Single Page Application
   CFDistribution:
     #checkov:skip=CKV_AWS_68: "For demo purposes and to reduce cost, no WAF is configured"
     Type: 'AWS::CloudFront::Distribution'
     DependsOn:
-    - ACMCertificate
     - S3Bucket
     Properties:
       DistributionConfig:
         ViewerCertificate:
-          AcmCertificateArn: !Ref ACMCertificate
+          AcmCertificateArn: !Ref ACMCertificateArn
           MinimumProtocolVersion: 'TLSv1.2_2021'
           SslSupportMethod: sni-only
         Aliases:
