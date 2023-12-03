@@ -1,6 +1,7 @@
 import awsSVG from "../assets/img/aws-icon.svg";
 import pythonSVG from "../assets/img/python-icon.svg";
 import gcpSVG from "../assets/img/gcp-icon.svg";
+import sqlSVG from "../assets/img/sql-icon.svg"
 import playwrightSVG from "../assets/img/playwright-icon.svg";
 import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
@@ -34,15 +35,19 @@ export const Skills = () => {
           <div className="col-12">
             <div className="skill-bx wow zoomIn">
               <h2>Skills</h2>
-              <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry.<br></br> Lorem Ipsum has been the industry's standard dummy text.</p>
+              <p>Dive into the core of what I bring to the table: a diverse array of skills honed to perfection. In this section, explore the tools and techniques that I wield with expertise, each skill a cornerstone in building tomorrow's data solutions.</p>
               <Carousel responsive={responsive} infinite={true} className="owl-carousel owl-theme skill-slider">
                 <div className="item">
-                  <img src={awsSVG} alt="" />
-                  <h5>Amazon Web Services</h5>
+                  <img src={sqlSVG} alt="" />
+                  <h5>SQL</h5>
                 </div>
                 <div className="item">
                   <img src={pythonSVG} alt="" />
                   <h5>python</h5>
+                </div>
+                <div className="item">
+                  <img src={awsSVG} alt="" />
+                  <h5>Amazon Web Services</h5>
                 </div>
                 <div className="item">
                   <img src={gcpSVG} alt="" />
