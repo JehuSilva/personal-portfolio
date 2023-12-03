@@ -19,18 +19,21 @@ Resources:
     Properties:
       Code:
         ZipFile: |
-          import json
-          def lambda_handler(event, context):
-              print(event)
-              return {
-                  "statusCode": 200,
-                  "headers": {
-                      "Access-Control-Allow-Origin": "*",  # Permite solicitudes de cualquier origen
-                      "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
-                      "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token"
-                  },
-                  "body": json.dumps(event)
-              }
+            import json
+            def lambda_handler(event, context):
+                print(event)
+                # Encabezados CORS
+                headers = {
+                    "Access-Control-Allow-Origin": "*",  # Permite solicitudes de cualquier origen
+                    "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+                    "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+                }
+                # Respuesta de la función
+                return {
+                    "statusCode": 200,
+                    "headers": headers,
+                    "body": json.dumps(event)
+                }
       Handler: index.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Runtime: python3.8
@@ -95,6 +98,36 @@ Resources:
       KeyType: "API_KEY"
       UsagePlanId: !Ref MyUsagePlan
 
+  # Método OPTIONS para el recurso 'ping'
+  MyApiResourcePingOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: !Ref MyApiGateway
+      ResourceId: !Ref MyApiResourcePing
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: "{ statusCode: 200 }"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: ""
+            ResponseParameters:
+              "method.response.header.Access-Control-Allow-Origin": "'*'"
+              "method.response.header.Access-Control-Allow-Methods": "'GET,OPTIONS'"
+              "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Origin": true
+            "method.response.header.Access-Control-Allow-Methods": true
+            "method.response.header.Access-Control-Allow-Headers": true
+
+
   MyApiResourcePing:
     Type: 'AWS::ApiGateway::Resource'
     Properties:
@@ -121,9 +154,41 @@ Resources:
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
-            "method.response.header.Access-Control-Allow-Origin": "'*'"
-            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,POST'"
-            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Origin": true
+            "method.response.header.Access-Control-Allow-Methods": true
+            "method.response.header.Access-Control-Allow-Headers": true
+
+
+
+  # Método OPTIONS para el recurso 'contact'
+  MyApiResourceContactOptions:
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      RestApiId: !Ref MyApiGateway
+      ResourceId: !Ref MyApiResourceContact
+      HttpMethod: OPTIONS
+      AuthorizationType: NONE
+      Integration:
+        Type: MOCK
+        RequestTemplates:
+          application/json: "{ statusCode: 200 }"
+        IntegrationResponses:
+          - StatusCode: 200
+            ResponseTemplates:
+              application/json: ""
+            ResponseParameters:
+              "method.response.header.Access-Control-Allow-Origin": "'*'"
+              "method.response.header.Access-Control-Allow-Methods": "'POST,OPTIONS'"
+              "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      MethodResponses:
+        - StatusCode: 200
+          ResponseModels:
+            application/json: "Empty"
+          ResponseParameters:
+            "method.response.header.Access-Control-Allow-Origin": true
+            "method.response.header.Access-Control-Allow-Methods": true
+            "method.response.header.Access-Control-Allow-Headers": true
+
 
   MyApiResourceContact:
     Type: 'AWS::ApiGateway::Resource'
@@ -151,9 +216,9 @@ Resources:
       MethodResponses:
         - StatusCode: 200
           ResponseParameters:
-            "method.response.header.Access-Control-Allow-Origin": "'*'"
-            "method.response.header.Access-Control-Allow-Methods": "'OPTIONS,GET,POST'"
-            "method.response.header.Access-Control-Allow-Headers": "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            "method.response.header.Access-Control-Allow-Origin": true
+            "method.response.header.Access-Control-Allow-Methods": true
+            "method.response.header.Access-Control-Allow-Headers": true
 
 
   # Permiso para que API Gateway pueda invocar Lambda
@@ -302,6 +367,46 @@ Resources:
         OriginAccessControlOriginType: s3
         SigningBehavior: always
         SigningProtocol: sigv4
+
+  CloudFrontCachePolicy:
+    Type: AWS::CloudFront::CachePolicy
+    Properties:
+      CachePolicyConfig:
+        Name: MyCachePolicy
+        Comment: Cache policy for my SPA
+        DefaultTTL: 86400
+        MaxTTL: 31536000
+        MinTTL: 0
+        ParametersInCacheKeyAndForwardedToOrigin:
+          CookiesConfig:
+            CookieBehavior: none
+          HeadersConfig:
+            HeaderBehavior: whitelist
+            Headers:
+              - Access-Control-Allow-Origin
+              - Access-Control-Allow-Methods
+              - Access-Control-Allow-Headers
+          QueryStringsConfig:
+            QueryStringBehavior: all
+          EnableAcceptEncodingGzip: true
+          EnableAcceptEncodingBrotli: true
+
+  CloudFrontOriginRequestPolicy:
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties:
+      OriginRequestPolicyConfig:
+        Name: MyOriginRequestPolicy
+        Comment: Origin request policy for my SPA
+        CookiesConfig:
+          CookieBehavior: none
+        HeadersConfig:
+          HeaderBehavior: whitelist
+          Headers:
+            - Access-Control-Allow-Origin
+            - Access-Control-Allow-Methods
+            - Access-Control-Allow-Headers
+        QueryStringsConfig:
+          QueryStringBehavior: all
 
 Outputs:
   APIEndpoint:

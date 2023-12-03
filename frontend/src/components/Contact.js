@@ -26,10 +26,11 @@ export const Contact = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setButtonText("Sending...");
-    let response = await fetch("http://localhost:5001/contact", {
+    let response = await fetch(window.myAppConfig.REACT_APP_API_URL, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json;charset=utf-8",
+        "Content-Type": "application/json",
+        "x-api-key": window.myAppConfig.REACT_APP_API_KEY
       },
       body: JSON.stringify(formDetails),
     });
@@ -62,7 +63,7 @@ export const Contact = () => {
                   <form onSubmit={handleSubmit}>
                     <Row>
                       <Col size={12} sm={6} className="px-1">
-                        <input type="text" value={formDetails.firstName} placeholder="First Namne" onChange={(e) => onFormUpdate('firstName', e.target.value)} />
+                        <input type="text" value={formDetails.firstName} placeholder="First Name" onChange={(e) => onFormUpdate('firstName', e.target.value)} />
                       </Col>
                       <Col size={12} sm={6} className="px-1">
                         <input type="text" value={formDetails.lasttName} placeholder="Last Name" onChange={(e) => onFormUpdate('lastName', e.target.value)} />
