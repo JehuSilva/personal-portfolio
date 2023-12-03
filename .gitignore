@@ -29,3 +29,6 @@ yarn-error.log*
 
 # VS Code
 .vscode/
+
+
+frontend/public/config.js
