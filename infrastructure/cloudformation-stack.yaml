@@ -52,31 +52,63 @@ Resources:
                 Resource: arn:aws:logs:*:*:*
 
   # API Gateway REST API
-  MyRestApi:
-    Type: 'AWS::ApiGateway::RestApi'
+  MyApiGateway:
+    Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: MyAPI
+      Name: MyApiGateway
+
+  MyApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    Properties:
+      Enabled: true
+      StageKeys:
+        - RestApiId:
+            Ref: MyApiGateway
+          StageName: v1
+    DependsOn: ApiDeployment
+
+  MyUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    Properties:
+      ApiStages:
+        - ApiId:
+            Ref: MyApiGateway
+          Stage: v1
+      Description: Usage plan for My API
+      UsagePlanName: MyUsagePlan
+    DependsOn: ApiDeployment
+
+  MyUsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties:
+      KeyId: !Ref MyApiKey
+      KeyType: "API_KEY"
+      UsagePlanId: !Ref MyUsagePlan
+
 
   # Recurso de API Gateway
   MyApiResource:
     Type: 'AWS::ApiGateway::Resource'
     Properties:
-      RestApiId: !Ref MyRestApi
-      ParentId: !GetAtt 'MyRestApi.RootResourceId'
+      RestApiId: !Ref MyApiGateway
+      ParentId: !GetAtt 'MyApiGateway.RootResourceId'
       PathPart: 'ping'
 
-  # Método de API Gateway para invocar Lambda
-  MyApiLambdaMethod:
-    Type: 'AWS::ApiGateway::Method'
+  MyApiMethod:
+    Type: AWS::ApiGateway::Method
     Properties:
-      RestApiId: !Ref MyRestApi
-      ResourceId: !Ref MyApiResource
+      RestApiId:
+        Ref: MyApiGateway
+      ResourceId:
+        Ref: MyApiResource  # Asegúrate de ajustar este valor
       HttpMethod: POST
       AuthorizationType: NONE
+      ApiKeyRequired: true
       Integration:
         Type: AWS_PROXY
         IntegrationHttpMethod: POST
-        Uri: !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations
+        Uri:
+          Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${MyLambdaFunction.Arn}/invocations
 
   # Permiso para que API Gateway pueda invocar Lambda
   LambdaPermissionForAPIGateway:
@@ -85,15 +117,15 @@ Resources:
       FunctionName: !Ref MyLambdaFunction
       Action: lambda:InvokeFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyRestApi}/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApiGateway}/*
 
   # Despliegue de API
   ApiDeployment:
     Type: 'AWS::ApiGateway::Deployment'
     Properties:
-      RestApiId: !Ref MyRestApi
+      RestApiId: !Ref MyApiGateway
       StageName: v1
-    DependsOn: MyApiLambdaMethod
+    DependsOn: MyApiMethod
 
   # The Amazon S3 bucket into which our Single Page Application build files must be deployed
   S3Bucket:
@@ -178,7 +210,7 @@ Resources:
           S3OriginConfig:
             OriginAccessIdentity: ""
           OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
-        - DomainName: !Sub "${MyRestApi}.execute-api.${AWS::Region}.amazonaws.com"
+        - DomainName: !Sub "${MyApiGateway}.execute-api.${AWS::Region}.amazonaws.com"
           Id: myAPIGTWOrigin
           CustomOriginConfig:
             OriginProtocolPolicy: https-only
@@ -225,7 +257,7 @@ Resources:
 
 Outputs:
   APIEndpoint:
-    Value: !Sub "https://${MyRestApi}.execute-api.${AWS::Region}.amazonaws.com/v1/ping"
+    Value: !Sub "https://${MyApiGateway}.execute-api.${AWS::Region}.amazonaws.com/v1/ping"
   BucketName:
     Value: !Sub "${DomainName}"
   CFDistributionURL:
