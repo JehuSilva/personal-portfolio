@@ -1,77 +1,75 @@
 import json
 import boto3
-from botocore.exceptions import ClientError
-
-dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('MyDynamoDBTable')  # Reemplaza con el nombre de tu tabla
 
 def lambda_handler(event, context):
-    try:
-        http_method = event['httpMethod']
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
+        "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
+    }
 
-        if http_method == 'GET':
-            return get_item(event)
-        elif http_method == 'POST':
-            return put_item(event)
-        elif http_method == 'PUT':
-            return update_item(event)
-        elif http_method == 'DELETE':
-            return delete_item(event)
-        else:
-            return {
-                'statusCode': 405,
-                'body': json.dumps('Method Not Allowed')
-            }
-    except Exception as e:
+    # Verificar el método HTTP y actuar en consecuencia
+    if event['httpMethod'] == 'POST' and event['resource'] == '/contact':
+        # Procesar el cuerpo del evento y enviar un correo electrónico
+        return handle_post_request(event, headers)
+    elif event['httpMethod'] == 'GET' and event['resource'] == '/ping':
+        # Retornar mensaje para método GET en /ping
         return {
-            'statusCode': 500,
-            'body': json.dumps(str(e))
-        }
-
-def get_item(event):
-    item_id = event['queryStringParameters']['id']
-    try:
-        response = table.get_item(Key={'id': item_id})
-    except ClientError as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps(e.response['Error']['Message'])
+            "statusCode": 200,
+            "headers": headers,
+            "body": json.dumps({"message": "API is working"})
         }
     else:
-        item = response.get('Item', {})
-        if not item:
-            return {'statusCode': 404, 'body': json.dumps('Item not found')}
+        # Método HTTP no soportado
         return {
-            'statusCode': 200,
-            'body': json.dumps(item)
+            "statusCode": 405,
+            "headers": headers,
+            "body": json.dumps({"error": "Method not allowed"})
         }
 
-def put_item(event):
-    item = json.loads(event['body'])
-    try:
-        table.put_item(Item=item)
-        return {'statusCode': 201, 'body': json.dumps(item)}
-    except ClientError as e:
+def handle_post_request(event, headers):
+    if 'body' not in event:
         return {
-            'statusCode': 500,
-            'body': json.dumps(e.response['Error']['Message'])
+            "statusCode": 400,
+            "headers": headers,
+            "body": json.dumps({"message": "The body of the request is missing"})
         }
 
-def update_item(event):
-    item = json.loads(event['body'])
-    item_id = item['id']
-    # Aquí se puede agregar lógica para actualizar el artículo específico
-    # Ejemplo: UpdateItem en DynamoDB
-    # ...
+    body = json.loads(event['body'])
 
-def delete_item(event):
-    item_id = event['queryStringParameters']['id']
-    try:
-        table.delete_item(Key={'id': item_id})
-        return {'statusCode': 204}
-    except ClientError as e:
-        return {
-            'statusCode': 500,
-            'body': json.dumps(e.response['Error']['Message'])
+    required_fields = ['email', 'firstName', 'message']
+    for field in required_fields:
+        if field not in body:
+            return {
+                "statusCode": 400,
+                "headers": headers,
+                "body": json.dumps({"message": f"The field '{field}' is missing"})
+            }
+    email_body = f"""
+    <html>
+    <body>
+    <h1>Nueva solicitud de contacto desde jehusilva.dev</h1>
+    <p><strong>Nombre:</strong> {body['firstName']} {body['lastName']}</p>
+    <p><strong>Email:</strong> {body['email']}</p>
+    <p><strong>Teléfono:</strong> {body['phone']}</p>
+    <p><strong>Mensaje:</strong> {body['message']}</p>
+    </body>
+    </html>
+    """
+    ses_client = boto3.client('ses')
+    response = ses_client.send_email(
+        Source='jehusilva.dev@gmail.com',  # Reemplaza con tu dirección de correo
+        Destination={
+            'ToAddresses': ['jehusilva.dev@gmail.com'],  # Reemplaza con la dirección donde quieres recibir los correos
+        },
+        Message={
+            'Subject': {'Data': 'Nueva solicitud de contacto'},
+            'Body': {'Html': {'Data': email_body}}
         }
+    )
 
+    return {
+        "statusCode": 200,
+        "headers": headers,
+        "body": json.dumps({"message": "Email sent successfully"})
+    }
