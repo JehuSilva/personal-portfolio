@@ -33,3 +33,4 @@ yarn-error.log*
 
 frontend/public/config.js
 backend/venv/
+*.pyc
