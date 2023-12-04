@@ -60,7 +60,16 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-
+                
+        - PolicyName: LambdaSESPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                Resource: "*"
   # API Gateway REST API
   MyApiGateway:
     Type: AWS::ApiGateway::RestApi
