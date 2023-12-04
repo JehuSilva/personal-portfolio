@@ -48,7 +48,7 @@ def handle_post_request(event, headers):
     email_body = f"""
     <html>
     <body>
-    <h1>Nueva solicitud de contacto desde jehusilva.dev</h1>
+    <h1>Mensaje de contacto recivido en jehusilva.dev</h1>
     <p><strong>Nombre:</strong> {body['firstName']} {body['lastName']}</p>
     <p><strong>Email:</strong> {body['email']}</p>
     <p><strong>Teléfono:</strong> {body['phone']}</p>
