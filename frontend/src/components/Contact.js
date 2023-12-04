@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Container, Row, Col } from "react-bootstrap";
+import { Container, Row, Col, Alert } from "react-bootstrap";
 import contactImg from "../assets/img/contact-img.svg";
 import 'animate.css';
 import TrackVisibility from 'react-on-screen';
@@ -36,9 +36,10 @@ export const Contact = () => {
     });
     setButtonText("Send");
     let result = await response.json();
+    console.log(result); // print the server response to the console
     setFormDetails(formInitialDetails);
     if (response.status === 200) {
-      setStatus({ success: true, message: result.message });
+      setStatus({ success: true, message: "Thanks for your message, I'll get back to you shortly" });
     } else {
       setStatus({ success: false, message: result.error || 'Something went wrong, please try again later.' });
     }
@@ -81,7 +82,7 @@ export const Contact = () => {
                       {
                         status.message &&
                         <Col>
-                          <p className={status.success === false ? "danger" : "success"}>{status.message}</p>
+                          <Alert variant={status.success ? "success" : "danger"}>{status.message}</Alert>
                         </Col>
                       }
                     </Row>
