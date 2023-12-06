@@ -345,11 +345,12 @@ nav.navbar .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
   }
 }
 
-.txt-rotate {
-  min-width: 150px;
-  /* Ajusta este valor según el ancho máximo que el texto pueda alcanzar */
-  display: inline-block;
+.animation-title {
+  width: 500px;
+  height: 150px;
+  overflow: hidden;
 }
+
 
 .txt-rotate>.wrap {
   border-right: 0.08em solid #666;
