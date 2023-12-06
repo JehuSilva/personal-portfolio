@@ -81,6 +81,12 @@ select:focus {
 }
 
 @media (min-width:1700px) {
+  .animation-title {
+    width: 375px;
+    height: 150px;
+    overflow: hidden;
+  }
+
   main .container {
     max-width: 100%;
     padding: 0 150px;
@@ -186,6 +192,7 @@ span.navbar-text {
   position: relative;
   background-color: transparent;
   transition: 0.3s ease-in-out;
+  border-radius: 15px;
 }
 
 .navbar-text button span {
@@ -287,6 +294,7 @@ nav.navbar .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
   font-size: 20px;
   margin-bottom: 16px;
   display: inline-block;
+  border-radius: 8px;
 }
 
 .banner h1 {
@@ -612,6 +620,7 @@ nav.navbar .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
   border-radius: 0;
   position: relative;
   transition: 0.3s ease-in-out;
+  border-radius: 15px;
 }
 
 .contact form button span {
