@@ -46,21 +46,53 @@ def handle_post_request(event, headers):
                 "body": json.dumps({"message": f"The field '{field}' is missing"})
             }
     email_body = f"""
-    <html>
-    <body>
-    <h1>Mensaje de contacto recivido en jehusilva.dev</h1>
-    <p><strong>Nombre:</strong> {body['firstName']} {body['lastName']}</p>
-    <p><strong>Email:</strong> {body['email']}</p>
-    <p><strong>Teléfono:</strong> {body['phone']}</p>
-    <p><strong>Mensaje:</strong> {body['message']}</p>
-    </body>
-    </html>
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <style>
+            body {{
+                font-family: Arial, sans-serif;
+                background-color: #f4f4f4;
+                color: #333;
+                line-height: 1.6;
+            }}
+            .container {{
+                width: 80%;
+                margin: auto;
+                background: #fff;
+                padding: 20px;
+            }}
+            h1 {{
+                color: #333;
+                text-align: center;
+            }}
+            .info p {{
+                font-size: 16px;
+                line-height: 1.5;
+            }}
+            .info strong {{
+                color: #444;
+            }}
+        </style>
+        </head>
+        <body>
+            <div class="container">
+                <h1>Mensaje de contacto recibido en jehusilva.dev</h1>
+                <div class="info">
+                    <p><strong>Nombre:</strong> {body.get('firstName')} {body.get('lastName')}</p>
+                    <p><strong>Email:</strong> {body.get('email')}</p>
+                    <p><strong>Teléfono:</strong> {body.get('phone')}</p>
+                    <p><strong>Mensaje:</strong> {body.get('message')}</p>
+                </div>
+            </div>
+        </body>
+        </html>
     """
     ses_client = boto3.client('ses')
     response = ses_client.send_email(
-        Source='jehusilva.dev@gmail.com',  # Reemplaza con tu dirección de correo
+        Source='jehusilva.dev@gmail.com',
         Destination={
-            'ToAddresses': ['jehusilva.dev@gmail.com'],  # Reemplaza con la dirección donde quieres recibir los correos
+            'ToAddresses': ['jehusilva.dev@gmail.com'],
         },
         Message={
             'Subject': {'Data': 'Nueva solicitud de contacto'},

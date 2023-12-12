@@ -1,4 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: "2010-09-09"
 
 Description: >
   Creates the infrastructure to host and expose a Single Page Application
@@ -19,84 +19,10 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Code:
-        ZipFile: |
-            import json
-            import boto3
-
-            def lambda_handler(event, context):
-                headers = {
-                    "Access-Control-Allow-Origin": "*",
-                    "Access-Control-Allow-Methods": "OPTIONS,POST,GET",
-                    "Access-Control-Allow-Headers": "Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token",
-                }
-
-                # Verificar el método HTTP y actuar en consecuencia
-                if event['httpMethod'] == 'POST' and event['resource'] == '/contact':
-                    # Procesar el cuerpo del evento y enviar un correo electrónico
-                    return handle_post_request(event, headers)
-                elif event['httpMethod'] == 'GET' and event['resource'] == '/ping':
-                    # Retornar mensaje para método GET en /ping
-                    return {
-                        "statusCode": 200,
-                        "headers": headers,
-                        "body": json.dumps({"message": "API is working"})
-                    }
-                else:
-                    # Método HTTP no soportado
-                    return {
-                        "statusCode": 405,
-                        "headers": headers,
-                        "body": json.dumps({"error": "Method not allowed"})
-                    }
-
-            def handle_post_request(event, headers):
-                if 'body' not in event:
-                    return {
-                        "statusCode": 400,
-                        "headers": headers,
-                        "body": json.dumps({"message": "The body of the request is missing"})
-                    }
-
-                body = json.loads(event['body'])
-
-                required_fields = ['email', 'firstName', 'message']
-                for field in required_fields:
-                    if field not in body:
-                        return {
-                            "statusCode": 400,
-                            "headers": headers,
-                            "body": json.dumps({"message": f"The field '{field}' is missing"})
-                        }
-                email_body = f"""
-                <html>
-                <body>
-                <h1>Mensaje de contacto recivido en jehusilva.dev</h1>
-                <p><strong>Nombre:</strong> {body['firstName']} {body['lastName']}</p>
-                <p><strong>Email:</strong> {body['email']}</p>
-                <p><strong>Teléfono:</strong> {body['phone']}</p>
-                <p><strong>Mensaje:</strong> {body['message']}</p>
-                </body>
-                </html>
-                """
-                ses_client = boto3.client('ses')
-                response = ses_client.send_email(
-                    Source='jehusilva.dev@gmail.com',  # Reemplaza con tu dirección de correo
-                    Destination={
-                        'ToAddresses': ['jehusilva.dev@gmail.com'],  # Reemplaza con la dirección donde quieres recibir los correos
-                    },
-                    Message={
-                        'Subject': {'Data': 'Nueva solicitud de contacto'},
-                        'Body': {'Html': {'Data': email_body}}
-                    }
-                )
-                return {
-                    "statusCode": 200,
-                    "headers": headers,
-                    "body": json.dumps({"message": "Email sent successfully"})
-                }
-      Handler: index.lambda_handler
+        S3Bucket: centralized-project-artifacts
+        S3Key: !Sub "websites/${DomainName}/src/lambda/package.zip"
       Role: !GetAtt LambdaExecutionRole.Arn
-      Runtime: python3.9
+      Runtime: python3.10
 
   # ---------- IAM Role for Lambda ----------
   # IAM role for Lambda execution with permissions for logs and SES
@@ -104,7 +30,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
-        Version: '2012-10-17'
+        Version: "2012-10-17"
         Statement:
           - Effect: Allow
             Principal:
@@ -113,7 +39,7 @@ Resources:
       Policies:
         - PolicyName: LambdaExecutionPolicy
           PolicyDocument:
-            Version: '2012-10-17'
+            Version: "2012-10-17"
             Statement:
               - Effect: Allow
                 Action:
@@ -121,7 +47,7 @@ Resources:
                   - logs:CreateLogStream
                   - logs:PutLogEvents
                 Resource: arn:aws:logs:*:*:*
-                
+
         - PolicyName: LambdaSESPolicy
           PolicyDocument:
             Version: "2012-10-17"
@@ -172,7 +98,7 @@ Resources:
 
   # Método OPTIONS para el recurso 'ping'
   MyApiResourcePingOptions:
-    Type: 'AWS::ApiGateway::Method'
+    Type: "AWS::ApiGateway::Method"
     Properties:
       RestApiId: !Ref MyApiGateway
       ResourceId: !Ref MyApiResourcePing
@@ -199,13 +125,12 @@ Resources:
             "method.response.header.Access-Control-Allow-Methods": true
             "method.response.header.Access-Control-Allow-Headers": true
 
-
   MyApiResourcePing:
-    Type: 'AWS::ApiGateway::Resource'
+    Type: "AWS::ApiGateway::Resource"
     Properties:
       RestApiId: !Ref MyApiGateway
-      ParentId: !GetAtt 'MyApiGateway.RootResourceId'
-      PathPart: 'ping'
+      ParentId: !GetAtt "MyApiGateway.RootResourceId"
+      PathPart: "ping"
 
   MyApiMethodPing:
     Type: AWS::ApiGateway::Method
@@ -231,7 +156,7 @@ Resources:
             "method.response.header.Access-Control-Allow-Headers": true
 
   MyApiResourceContactOptions:
-    Type: 'AWS::ApiGateway::Method'
+    Type: "AWS::ApiGateway::Method"
     Properties:
       RestApiId: !Ref MyApiGateway
       ResourceId: !Ref MyApiResourceContact
@@ -258,13 +183,12 @@ Resources:
             "method.response.header.Access-Control-Allow-Methods": true
             "method.response.header.Access-Control-Allow-Headers": true
 
-
   MyApiResourceContact:
-    Type: 'AWS::ApiGateway::Resource'
+    Type: "AWS::ApiGateway::Resource"
     Properties:
       RestApiId: !Ref MyApiGateway
-      ParentId: !GetAtt 'MyApiGateway.RootResourceId'
-      PathPart: 'contact'
+      ParentId: !GetAtt "MyApiGateway.RootResourceId"
+      PathPart: "contact"
 
   MyApiMethodContact:
     Type: AWS::ApiGateway::Method
@@ -289,7 +213,6 @@ Resources:
             "method.response.header.Access-Control-Allow-Methods": true
             "method.response.header.Access-Control-Allow-Headers": true
 
-
   LambdaPermissionForAPIGateway:
     Type: AWS::Lambda::Permission
     Properties:
@@ -299,26 +222,25 @@ Resources:
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${MyApiGateway}/*
 
   ApiDeployment:
-      Type: 'AWS::ApiGateway::Deployment'
-      Properties:
-        RestApiId: !Ref MyApiGateway
-        StageName: v1
-      DependsOn: 
-        - MyApiMethodPing
-        - MyApiMethodContact
-
+    Type: "AWS::ApiGateway::Deployment"
+    Properties:
+      RestApiId: !Ref MyApiGateway
+      StageName: v1
+    DependsOn:
+      - MyApiMethodPing
+      - MyApiMethodContact
 
   # ---------- S3 Resources ----------
   # S3 bucket to host the single page application
   S3Bucket:
-    Type: 'AWS::S3::Bucket'
+    Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: !Sub '${DomainName}'
+      BucketName: !Sub "${DomainName}"
       PublicAccessBlockConfiguration:
-        BlockPublicAcls : true
-        BlockPublicPolicy : true
-        IgnorePublicAcls : true
-        RestrictPublicBuckets : true
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       LoggingConfiguration:
         DestinationBucketName: !Ref LoggingBucket
         LogFilePrefix: s3-access-logs
@@ -326,12 +248,12 @@ Resources:
         Status: Enabled
       BucketEncryption:
         ServerSideEncryptionConfiguration:
-        - ServerSideEncryptionByDefault:
-            SSEAlgorithm: 'AES256'
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
 
   # S3 bucket policy to secure the application hosting
   BucketPolicy:
-    Type: 'AWS::S3::BucketPolicy'
+    Type: "AWS::S3::BucketPolicy"
     Properties:
       PolicyDocument:
         Id: MyPolicy
@@ -345,25 +267,25 @@ Resources:
             Condition:
               StringEquals:
                 AWS:SourceArn: !Sub arn:aws:cloudfront::${AWS::AccountId}:distribution/${CFDistribution}
-            Action: 's3:GetObject*'
+            Action: "s3:GetObject*"
       Bucket: !Ref S3Bucket
 
   # S3 bucket for storing logs
   LoggingBucket:
-    Type: 'AWS::S3::Bucket'
+    Type: "AWS::S3::Bucket"
     Properties:
-      BucketName: !Sub '${DomainName}-logs'
+      BucketName: !Sub "${DomainName}-logs"
       PublicAccessBlockConfiguration:
-        BlockPublicAcls : true
-        BlockPublicPolicy : true
-        IgnorePublicAcls : true
-        RestrictPublicBuckets : true
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
       VersioningConfiguration:
         Status: Enabled
       BucketEncryption:
         ServerSideEncryptionConfiguration:
-        - ServerSideEncryptionByDefault:
-            SSEAlgorithm: 'AES256'
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: "AES256"
       OwnershipControls:
         Rules:
           - ObjectOwnership: BucketOwnerPreferred
@@ -372,34 +294,34 @@ Resources:
   # ---------- CloudFront Distribution ----------
   # CloudFront distribution to expose the SPA and API
   CFDistribution:
-    Type: 'AWS::CloudFront::Distribution'
+    Type: "AWS::CloudFront::Distribution"
     Properties:
       DistributionConfig:
         ViewerCertificate:
           AcmCertificateArn: !Ref ACMCertificateArn
-          MinimumProtocolVersion: 'TLSv1.2_2021'
+          MinimumProtocolVersion: "TLSv1.2_2021"
           SslSupportMethod: sni-only
         Aliases:
           - !Ref DomainName
           - !Sub "www.${DomainName}"
           - !Sub "*.${DomainName}"
         Origins:
-        - DomainName: !GetAtt S3Bucket.RegionalDomainName
-          Id: myS3Origin
-          S3OriginConfig:
-            OriginAccessIdentity: ""
-          OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
-        - DomainName: !Sub "${MyApiGateway}.execute-api.${AWS::Region}.amazonaws.com"
-          Id: myAPIGTWOrigin
-          CustomOriginConfig:
-            OriginProtocolPolicy: https-only
-        Enabled: 'true'
+          - DomainName: !GetAtt S3Bucket.RegionalDomainName
+            Id: myS3Origin
+            S3OriginConfig:
+              OriginAccessIdentity: ""
+            OriginAccessControlId: !GetAtt CloudFrontOriginAccessControl.Id
+          - DomainName: !Sub "${MyApiGateway}.execute-api.${AWS::Region}.amazonaws.com"
+            Id: myAPIGTWOrigin
+            CustomOriginConfig:
+              OriginProtocolPolicy: https-only
+        Enabled: "true"
         DefaultRootObject: index.html
         DefaultCacheBehavior:
           AllowedMethods:
-          - GET
-          - HEAD
-          - OPTIONS
+            - GET
+            - HEAD
+            - OPTIONS
           TargetOriginId: myS3Origin
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # CachingOptimized
           OriginRequestPolicyId: 88a5eaf4-2fd4-4709-b370-b4c650ea3fcf # CORS-S3Origin
@@ -408,9 +330,9 @@ Resources:
         CacheBehaviors:
           - PathPattern: "v1/ping"
             AllowedMethods:
-            - GET
-            - HEAD
-            - OPTIONS
+              - GET
+              - HEAD
+              - OPTIONS
             TargetOriginId: myAPIGTWOrigin
             CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # CachingDisabled
             OriginRequestPolicyId: b689b0a8-53d0-40ab-baf2-68738e2966ac # AllViewerExceptHostHeader
@@ -419,7 +341,7 @@ Resources:
         PriceClass: PriceClass_All
         Logging:
           Bucket: !GetAtt LoggingBucket.RegionalDomainName
-          Prefix: 'cloudfront-access-logs'
+          Prefix: "cloudfront-access-logs"
     DependsOn:
       - S3Bucket
 
