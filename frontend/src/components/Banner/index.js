@@ -56,8 +56,9 @@ export const Banner = () => {
               {({ isVisible }) =>
                 <div className={isVisible ? "animate__animated animate__fadeIn" : ""} style={{ transform: isVisible ? 'scale(1)' : 'scale(0.9)' }}>
                   <span className="tagline">Welcome to my Portfolio</span>
+                  <h1 className="banner-title">I'm Jehu</h1>
                   <h1 className="banner-animation-title">
-                    {`Hi! I'm Jehu`} <span className="banner-txt-rotate" dataperiod="1000" data-rotate='[ "Cloud Architect", "Data Engineer"]'><span className="wrap">{text}</span></span>
+                    <span className="banner-txt-rotate" dataperiod="1000" data-rotate='[ "Cloud Architect", "Data Engineer"]'><span className="wrap">{text}</span></span>
                   </h1>
                   <p>Passionate about transforming complex data into clear, actionable insights. Armed with Python and AWS, I craft sophisticated solutions that drive innovation and efficiency. Join me in exploring the possibilities of big data and cloud computing, and let's turn data-driven dreams into reality!</p>
                 </div>}

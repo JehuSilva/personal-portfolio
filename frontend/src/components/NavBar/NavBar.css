@@ -172,3 +172,21 @@ nav.navbar .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon:before {
 nav.navbar .navbar-toggler[aria-expanded="true"] .navbar-toggler-icon {
     border-color: transparent;
 }
+
+
+
+
+
+/* make backkground solid and black when its on smartphone */
+@media (max-width: 768px) {
+
+    nav.navbar {
+        background-color: #121212;
+    }
+}
+
+@media(min-width: 768px) {
+    nav.navbar .navbar-nav .nav-link.navbar-link {
+        padding: 0 10px;
+    }
+}
