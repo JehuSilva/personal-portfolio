@@ -25,8 +25,9 @@
     font-weight: 700;
     letter-spacing: 0.8px;
     line-height: 1;
-    margin-bottom: 20px;
+    margin-bottom: 0px;
     display: block;
+
 }
 
 .banner p {
@@ -35,6 +36,7 @@
     letter-spacing: 0.8px;
     line-height: 1.5em;
     width: 96%;
+    text-align: center;
 }
 
 .banner button {
@@ -62,9 +64,13 @@
     animation: updown 3s linear infinite;
 }
 
+.banner-title {
+    margin-bottom: 0px;
+}
+
 .banner-animation-title {
-    width: 500px;
-    height: 150px;
+    width: 700px;
+    height: 300px;
     overflow: hidden;
 }
 
@@ -73,10 +79,60 @@
     border-right: 0.08em solid #666;
 }
 
-@media (max-width: 480px) {
+
+/* fix the banner animation title for each phone, tablet and computer breakpoints */
+/* PHONE: Each below 576px */
+@media (max-width: 576px) {
+    .banner h1 {
+        font-size: 40px;
+    }
+
     .banner-animation-title {
-        width: 375px;
-        height: 150px;
+        /* fix width depending on box size */
+        width: fit-content;
+        height: 100px;
         overflow: hidden;
     }
+
+    .banner-txt-rotate>.wrap {
+        border-right: 0.08em solid #666;
+    }
+
+}
+
+/* TABLET */
+@media (min-width: 576px) and (max-width: 768px) {
+    .banner h1 {
+        font-size: 40px;
+    }
+
+    .banner-animation-title {
+        /* fix width depending on box size */
+        width: fit-content;
+        height: 100px;
+    }
+}
+
+/* COMPUTER */
+@media (min-width: 768px) {
+
+    /************ Banner Css ************/
+    .banner {
+        margin-top: 0;
+        padding: 150px 0 100px 0;
+        background-image: url('./banner-bg.png');
+        background-position: top center;
+        background-size: cover;
+        background-repeat: no-repeat;
+    }
+
+    .banner-animation-title {
+        width: 700px;
+        height: 80px;
+    }
+
+    .banner h1 {
+        font-size: 40px;
+    }
+
 }
