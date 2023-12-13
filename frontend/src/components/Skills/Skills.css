@@ -35,3 +35,21 @@
     width: 50%;
     margin: 0 auto 15px auto;
 }
+
+.skill-background-image-left {
+    top: 28%;
+    position: absolute;
+    bottom: 0;
+    width: 40%;
+    z-index: -4;
+}
+
+
+.skill-background-image-right {
+    top: 20%;
+    position: absolute;
+    bottom: 0;
+    width: 35%;
+    right: 0;
+    z-index: -4;
+}

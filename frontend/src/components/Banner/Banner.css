@@ -61,3 +61,22 @@
 .banner img {
     animation: updown 3s linear infinite;
 }
+
+.banner-animation-title {
+    width: 500px;
+    height: 150px;
+    overflow: hidden;
+}
+
+
+.banner-txt-rotate>.wrap {
+    border-right: 0.08em solid #666;
+}
+
+@media (max-width: 480px) {
+    .banner-animation-title {
+        width: 375px;
+        height: 150px;
+        overflow: hidden;
+    }
+}
