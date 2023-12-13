@@ -4,6 +4,7 @@ import linkedinSVG from "./linkedin-icon.svg";
 // import facebookSVG from "../assets/img/facebook-icon.svg";
 import instagramSVG from "./instagram-icon.svg";
 import githubSVG from './github-icon.svg';
+import './Footer.css';
 
 export const Footer = () => {
   return (
