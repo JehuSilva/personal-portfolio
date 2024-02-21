@@ -358,48 +358,6 @@ Resources:
     DependsOn:
       - S3Bucket
 
-  # # CloudFront cache policy
-  # CloudFrontCachePolicy:
-  #   Type: AWS::CloudFront::CachePolicy
-  #   Properties:
-  #     CachePolicyConfig:
-  #       Name: MyCachePolicy
-  #       Comment: Cache policy for my SPA
-  #       DefaultTTL: 86400
-  #       MaxTTL: 31536000
-  #       MinTTL: 0
-  #       ParametersInCacheKeyAndForwardedToOrigin:
-  #         CookiesConfig:
-  #           CookieBehavior: none
-  #         HeadersConfig:
-  #           HeaderBehavior: whitelist
-  #           Headers:
-  #             - Access-Control-Allow-Origin
-  #             - Access-Control-Allow-Methods
-  #             - Access-Control-Allow-Headers
-  #         QueryStringsConfig:
-  #           QueryStringBehavior: all
-  #         EnableAcceptEncodingGzip: true
-  #         EnableAcceptEncodingBrotli: true
-
-  # # CloudFront origin request policy
-  # CloudFrontOriginRequestPolicy:
-  #   Type: AWS::CloudFront::OriginRequestPolicy
-  #   Properties:
-  #     OriginRequestPolicyConfig:
-  #       Name: MyOriginRequestPolicy
-  #       Comment: Origin request policy for my SPA
-  #       CookiesConfig:
-  #         CookieBehavior: none
-  #       HeadersConfig:
-  #         HeaderBehavior: whitelist
-  #         Headers:
-  #           - Access-Control-Allow-Origin
-  #           - Access-Control-Allow-Methods
-  #           - Access-Control-Allow-Headers
-  #       QueryStringsConfig:
-  #         QueryStringBehavior: all
-
 Outputs:
   APIEndpoint:
     Value: !Sub "https://${MyApiGateway}.execute-api.${AWS::Region}.amazonaws.com/v1"
